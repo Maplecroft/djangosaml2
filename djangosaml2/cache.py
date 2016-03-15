@@ -13,8 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+import six
+
 from saml2.cache import Cache
 from saml2.ident import code, decode
+
+
+logger = logging.getLogger('djangosaml2')
 
 
 class DjangoSessionCacheAdapter(dict):
@@ -80,6 +86,8 @@ class IdentityCache(Cache):
         info = super(IdentityCache, self).get(name_id, entity_id, *args, **kwargs)
         try:
             name_id = info['name_id']
+            if not isinstance(name_id, six.string_types):
+                name_id = code(name_id)
         except KeyError:
             pass
         else:
@@ -91,6 +99,8 @@ class IdentityCache(Cache):
     def set(self, name_id, entity_id, info, *args, **kwargs):
         try:
             name_id = info['name_id']
+            if isinstance(name_id, six.string_types):
+                name_id = decode(name_id)
         except KeyError:
             pass
         else:
